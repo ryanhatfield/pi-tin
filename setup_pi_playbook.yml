@@ -1,0 +1,41 @@
+---
+- name: Setup ZSH and basic shell config
+  hosts: all
+  vars:
+    the_user: "{{ ansible_user_id }}"
+  tasks:
+    - name: Update cache
+      become: true
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - zsh
+          - vim
+          - mosh
+
+    - name: ZSH Directory
+      stat:
+        path: ~/.oh-my-zsh
+      register: omz_dir
+
+    - name: Download Oh My ZSH installer
+      ansible.builtin.command: curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -o /tmp/install.sh
+      when: not omz_dir.stat.exists
+
+    - name: Set Installer to Executable
+      ansible.builtin.command: chmod +x /tmp/install.sh
+      when: not omz_dir.stat.exists
+
+    - name: Install Oh My ZSH
+      ansible.builtin.command: /tmp/install.sh --unattended
+      when: not omz_dir.stat.exists
+
+    - name: Switch to ZSH shell
+      become: yes
+      user:
+        name: "{{ the_user }}"
+        shell: /usr/bin/zsh

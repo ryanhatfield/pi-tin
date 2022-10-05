@@ -39,3 +39,19 @@
       user:
         name: "{{ the_user }}"
         shell: /usr/bin/zsh
+      when: not omz_dir.stat.exists
+- name: Setup github keys
+  hosts: all
+  tasks:
+    - name: Create ssh config
+      copy:
+        dest: ~/.ssh/config
+        content: |
+          Host github.com
+          Hostname github.com
+          IdentityFile ~/.ssh/id_rhatfield_github
+          IdentitiesOnly yes
+    - name: Copy private key
+      copy:
+        dest: ~/.ssh/id_rhatfield_github
+        src: ~/.ssh/id_rhatfield_github
